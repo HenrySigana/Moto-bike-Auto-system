@@ -3,269 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MotoHub Nairobi - Bike Spares Management System</title>
+    <title>MotoHub Pro - Nairobi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Space Grotesk', 'sans-serif'] },
-                    colors: {
-                        moto: { 900: '#0a0a0f', 800: '#12121a', 700: '#1a1a2e', 600: '#252542', 500: '#f59e0b', 400: '#fbbf24', accent: '#ef4444', success: '#10b981' }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        .glass-panel { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .bike-gradient { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
-        .grid-pattern { background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0); background-size: 20px 20px; }
-        @media print {
-            body * { visibility: hidden; }
-            #receipt-print, #receipt-print * { visibility: visible; }
-            #receipt-print { position: absolute; left: 0; top: 0; width: 100%; }
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; color: white; }
+        .font-display { font-family: 'Space Grotesk', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .moto-gradient { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #252542; border-radius: 10px; }
+        @media print { .no-print { display: none !important; } #receipt-area { display: block !important; color: black !important; } }
     </style>
 </head>
-<body class="bg-moto-900 text-white font-sans overflow-hidden grid-pattern">
+<body class="overflow-hidden">
 
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-moto-900">
-        <div class="relative z-10 w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bike-gradient flex items-center justify-center shadow-lg">
-                    <i class="fas fa-motorcycle text-3xl text-white"></i>
-                </div>
-                <h1 class="font-display text-3xl font-bold mb-2">MotoHub Nairobi</h1>
-                <p class="text-gray-400 text-sm">Premium Spares Management</p>
+    <div id="authScreen" class="fixed inset-0 z-[100] bg-moto-900 flex items-center justify-center">
+        <div class="glass p-8 rounded-3xl w-full max-w-md text-center">
+            <div class="w-20 h-20 moto-gradient rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <i class="fas fa-motorcycle text-4xl"></i>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <input type="text" placeholder="Username" class="w-full bg-moto-800 border border-moto-600 rounded-lg p-3 outline-none focus:border-moto-500" value="admin">
-                <input type="password" placeholder="Password" class="w-full bg-moto-800 border border-moto-600 rounded-lg p-3 outline-none focus:border-moto-500" value="admin123">
-                <button type="submit" class="w-full bike-gradient font-bold py-3 rounded-lg shadow-lg">Sign In</button>
-            </form>
+            <h1 class="font-display text-3xl font-bold mb-2">MotoHub Nairobi</h1>
+            <p class="text-gray-500 mb-8">Authorized Personnel Only</p>
+            <button onclick="enterSystem()" class="w-full moto-gradient py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform">Initialize System</button>
         </div>
     </div>
 
-    <div id="mainApp" class="hidden h-screen flex">
-        <aside class="w-64 bg-moto-800 border-r border-moto-600 flex flex-col p-4">
-            <div class="flex items-center gap-3 mb-8 px-2">
-                <div class="w-10 h-10 rounded-lg bike-gradient flex items-center justify-center"><i class="fas fa-motorcycle"></i></div>
-                <h2 class="font-display font-bold text-lg">MotoHub</h2>
+    <div class="flex h-screen no-print">
+        <aside class="w-64 border-r border-white/10 flex flex-col p-6 space-y-8">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 moto-gradient rounded flex items-center justify-center"><i class="fas fa-bolt text-xs"></i></div>
+                <span class="font-display font-bold text-xl tracking-tight">MOTOHUB</span>
             </div>
-            <nav class="space-y-1 flex-1">
-                <button onclick="switchView('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-moto-700 text-moto-500"><i class="fas fa-chart-line"></i> Dashboard</button>
-                <button onclick="switchView('inventory')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-moto-700"><i class="fas fa-boxes"></i> Inventory <span id="invBadge" class="ml-auto bg-moto-accent text-white text-xs px-2 py-0.5 rounded-full hidden">!</span></button>
-                <button onclick="switchView('pos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-moto-700"><i class="fas fa-cash-register"></i> Point of Sale</button>
-                <button onclick="switchView('suppliers')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-moto-700"><i class="fas fa-truck"></i> Suppliers</button>
+            
+            <nav class="flex-1 space-y-2">
+                <button onclick="showView('dash')" class="nav-link w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-white/5 text-orange-400 font-bold">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button onclick="showView('inv')" class="nav-link w-full flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition">
+                    <i class="fas fa-cubes"></i> Inventory
+                </button>
+                <button onclick="showView('pos')" class="nav-link w-full flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition">
+                    <i class="fas fa-shopping-cart"></i> Point of Sale
+                </button>
+                <button onclick="showView('reports')" class="nav-link w-full flex items-center gap-4 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 transition">
+                    <i class="fas fa-file-invoice-dollar"></i> Sales Ledger
+                </button>
             </nav>
-            <div class="border-t border-moto-600 pt-4 text-xs text-gray-500">
+
+            <div class="p-4 glass rounded-2xl text-xs text-gray-500">
+                <p class="font-bold text-gray-300">SYSTEM STATUS</p>
+                <p class="mt-1">Branch: Industrial Area</p>
                 <p>Support: 0703870468</p>
-                <button onclick="location.reload()" class="mt-2 text-moto-accent"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col overflow-hidden">
-            <header class="h-16 bg-moto-800/50 backdrop-blur border-b border-moto-600 flex items-center justify-between px-6">
-                <h1 id="pageTitle" class="font-display text-xl font-bold">Dashboard</h1>
-                <div class="text-sm text-gray-400">Location: Industrial Area</div>
+            <header class="h-20 border-b border-white/10 flex items-center justify-between px-8">
+                <h2 id="viewTitle" class="font-display text-2xl font-bold">Dashboard Overview</h2>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        <input type="text" id="globalSearch" onkeyup="filterInventory()" placeholder="Search spares..." class="bg-white/5 border border-white/10 rounded-full pl-12 pr-6 py-2 w-64 focus:border-orange-500 outline-none transition-all">
+                    </div>
+                </div>
             </header>
 
-            <div id="contentArea" class="flex-1 overflow-y-auto p-6">
-                <div id="dashboardView" class="view-section space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-moto-500">
-                            <p class="text-gray-400 text-sm">Today's Sales</p>
-                            <h3 class="text-2xl font-bold">KES 45,200</h3>
+            <div id="mainContent" class="flex-1 overflow-y-auto p-8 custom-scroll">
+                
+                <div id="view-dash" class="view-pane space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="glass p-6 rounded-3xl border-b-4 border-orange-500">
+                            <p class="text-gray-500 text-sm">Today's Revenue</p>
+                            <h3 id="statRevenue" class="text-3xl font-bold font-display mt-2">KES 0</h3>
                         </div>
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-blue-500">
-                            <p class="text-gray-400 text-sm">Active Parts</p>
-                            <h3 id="dashStockCount" class="text-2xl font-bold">0</h3>
+                        <div class="glass p-6 rounded-3xl border-b-4 border-blue-500">
+                            <p class="text-gray-500 text-sm">Total Parts</p>
+                            <h3 id="statParts" class="text-3xl font-bold font-display mt-2">0</h3>
                         </div>
-                        <div class="glass-panel p-5 rounded-xl border-l-4 border-moto-accent">
-                            <p class="text-gray-400 text-sm">Low Stock Alerts</p>
-                            <h3 id="dashAlertCount" class="text-2xl font-bold">0</h3>
+                        <div class="glass p-6 rounded-3xl border-b-4 border-red-500">
+                            <p class="text-gray-500 text-sm">Out of Stock</p>
+                            <h3 id="statLow" class="text-3xl font-bold font-display mt-2 text-red-500">0</h3>
                         </div>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl">
-                        <h3 class="font-bold text-lg mb-4 text-moto-accent">Critical Stock Alerts</h3>
-                        <div id="lowStockList" class="space-y-3"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="glass p-8 rounded-3xl">
+                            <h4 class="font-bold mb-6 flex justify-between"><span>Low Stock Alerts</span> <i class="fas fa-bell text-orange-500"></i></h4>
+                            <div id="lowStockFeed" class="space-y-4"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="inventoryView" class="view-section hidden space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-xl font-bold">Inventory List</h2>
-                        <button onclick="document.getElementById('addPartModal').classList.remove('hidden')" class="px-4 py-2 bike-gradient rounded-lg text-sm font-bold">Add New Part</button>
+                <div id="view-inv" class="view-pane hidden space-y-6">
+                    <div class="flex justify-between">
+                        <h3 class="text-xl font-bold">Manage Stock</h3>
+                        <button onclick="toggleModal('partModal')" class="moto-gradient px-6 py-2 rounded-full font-bold text-sm shadow-lg shadow-orange-500/20">Add Spare Part</button>
                     </div>
-                    <div class="glass-panel rounded-xl overflow-hidden">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-moto-700 text-gray-400 uppercase text-xs">
-                                <tr><th class="p-4">Part Name</th><th>Stock</th><th>Price (KES)</th><th>Actions</th></tr>
+                    <div class="glass rounded-3xl overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-white/5 text-gray-400 text-xs uppercase">
+                                <tr><th class="p-5">Item Details</th><th>Quantity</th><th>Unit Price</th><th>Status</th></tr>
                             </thead>
-                            <tbody id="inventoryTable"></tbody>
+                            <tbody id="inventoryList"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <div id="posView" class="view-section hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 space-y-4">
-                        <h2 class="text-xl font-bold">Available Spares</h2>
-                        <div id="posGrid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+                <div id="view-pos" class="view-pane hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-6">
+                        <div id="posGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
                     </div>
-                    <div class="glass-panel p-6 rounded-xl h-fit sticky top-0">
-                        <h2 class="text-xl font-bold mb-4">Current Order</h2>
-                        <div id="cartList" class="space-y-3 mb-6 min-h-[100px]"></div>
-                        <div class="border-t border-moto-600 pt-4 space-y-2">
-                            <div class="flex justify-between font-bold text-xl text-moto-500">
-                                <span>Total</span><span id="posTotal">KES 0</span>
+                    <div class="glass p-8 rounded-3xl h-fit border-2 border-orange-500/30">
+                        <h3 class="font-bold text-xl mb-6">Active Receipt</h3>
+                        <div id="cartItems" class="space-y-4 mb-8 min-h-[200px]"></div>
+                        <div class="border-t border-white/10 pt-6 space-y-4">
+                            <div class="flex justify-between text-2xl font-bold">
+                                <span>Total</span><span id="cartTotal" class="text-orange-500">KES 0</span>
                             </div>
-                            <button onclick="processSale()" class="w-full bike-gradient py-4 rounded-xl font-bold shadow-lg">Complete & Print Receipt</button>
+                            <button onclick="checkout()" class="w-full moto-gradient py-4 rounded-2xl font-bold text-lg shadow-xl hover:opacity-90 transition">Finalize Sale</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="suppliersView" class="view-section hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="supplierGrid"></div>
+                <div id="view-reports" class="view-pane hidden space-y-6">
+                    <h3 class="text-xl font-bold">Transaction History</h3>
+                    <div class="glass rounded-3xl overflow-hidden" id="ledgerTable"></div>
+                </div>
+
             </div>
         </main>
     </div>
 
-    <div id="addPartModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="bg-moto-800 p-8 rounded-2xl border border-moto-600 w-full max-w-md">
-            <h2 class="text-xl font-bold mb-4">Add Spare Part</h2>
-            <form onsubmit="addNewPart(event)" class="space-y-4">
-                <input type="text" id="pName" placeholder="Part Name" required class="w-full bg-moto-700 border border-moto-600 rounded p-3">
-                <input type="number" id="pPrice" placeholder="Price (KES)" required class="w-full bg-moto-700 border border-moto-600 rounded p-3">
-                <input type="number" id="pStock" placeholder="Initial Stock" required class="w-full bg-moto-700 border border-moto-600 rounded p-3">
-                <div class="flex gap-2">
-                    <button type="button" onclick="document.getElementById('addPartModal').classList.add('hidden')" class="flex-1 bg-gray-600 py-2 rounded">Cancel</button>
-                    <button type="submit" class="flex-1 bike-gradient py-2 rounded font-bold">Save Part</button>
+    <div id="partModal" class="fixed inset-0 z-[110] bg-black/80 backdrop-blur hidden flex items-center justify-center p-4">
+        <div class="glass p-8 rounded-3xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6">Add New Spare</h2>
+            <form id="partForm" onsubmit="savePart(event)" class="space-y-4">
+                <input type="text" id="pName" placeholder="Part Name (e.g. Boxer BM150 Chain)" required class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none focus:border-orange-500">
+                <input type="number" id="pQty" placeholder="Stock Quantity" required class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none">
+                <input type="number" id="pPrice" placeholder="Selling Price (KES)" required class="w-full bg-white/5 border border-white/10 p-4 rounded-xl outline-none">
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="toggleModal('partModal')" class="flex-1 py-3 bg-white/10 rounded-xl">Cancel</button>
+                    <button type="submit" class="flex-1 moto-gradient py-3 rounded-xl font-bold">Save Part</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="receipt-print" class="hidden text-black bg-white p-8 font-mono">
-        <center>
-            <h1 class="font-bold">MOTOHUB NAIROBI</h1>
-            <p>Industrial Area • 0703870468</p>
-            <hr class="my-2 border-black">
-        </center>
-        <div id="receipt-items" class="my-4"></div>
-        <hr class="my-2 border-black">
-        <div class="flex justify-between font-bold text-lg">
-            <span>TOTAL:</span><span id="receipt-total"></span>
+    <div id="receipt-area" class="hidden p-10 font-mono text-black">
+        <div class="text-center">
+            <h1 class="text-2xl font-bold uppercase">MOTOHUB NAIROBI</h1>
+            <p>Industrial Area • Contact: 0703870468</p>
+            <div class="border-b-2 border-black my-4"></div>
         </div>
-        <center class="mt-8"><p>Thank you for shopping at MotoHub!</p></center>
+        <div id="receiptContent" class="space-y-2"></div>
+        <div class="border-t-2 border-black mt-4 pt-4 flex justify-between font-bold text-xl">
+            <span>TOTAL:</span><span id="receiptTotalText"></span>
+        </div>
+        <p class="mt-10 text-center text-xs">Returns only accepted with valid receipt.<br>Thank you for choosing MotoHub!</p>
     </div>
 
     <script>
         let inventory = [
-            { id: 1, name: "Brake Pads (Boxer BM150)", stock: 4, price: 4000, critical: 5 },
-            { id: 2, name: "Engine Oil 4T", stock: 15, price: 850, critical: 5 },
-            { id: 3, name: "Chain Kit (TVS HLX)", stock: 3, price: 2500, critical: 5 }
+            { id: 1, name: "Engine Oil Castrol 1L", qty: 24, price: 850 },
+            { id: 2, name: "Brake Pads (Boxer BM150)", qty: 3, price: 4000 },
+            { id: 3, name: "Spark Plug NGK", qty: 45, price: 350 },
+            { id: 4, name: "TVS HLX Drive Chain", qty: 0, price: 2800 }
         ];
         let cart = [];
+        let sales = [];
 
-        function handleLogin(e) {
-            e.preventDefault();
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            updateUI();
+        function enterSystem() {
+            document.getElementById('authScreen').classList.add('hidden');
+            renderAll();
         }
 
-        function switchView(viewId) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
-            document.getElementById(viewId + 'View').classList.remove('hidden');
-            document.getElementById('pageTitle').innerText = viewId.toUpperCase();
-            updateUI();
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
         }
 
-        function updateUI() {
-            // Inventory Table
-            const table = document.getElementById('inventoryTable');
-            table.innerHTML = inventory.map(item => `
-                <tr class="border-b border-moto-600/30">
-                    <td class="p-4">${item.name}</td>
-                    <td><span class="${item.stock <= item.critical ? 'text-moto-accent font-bold' : ''}">${item.stock}</span></td>
-                    <td>${item.price.toLocaleString()}</td>
-                    <td><button onclick="addToCart('${item.name}', ${item.price})" class="text-moto-500 hover:underline">Add to Sale</button></td>
-                </tr>
-            `).join('');
-
-            // POS Grid
-            document.getElementById('posGrid').innerHTML = inventory.map(item => `
-                <div onclick="addToCart('${item.name}', ${item.price})" class="glass-panel p-4 rounded-xl cursor-pointer hover:border-moto-500 transition-all text-center">
-                    <div class="font-bold text-sm mb-1">${item.name}</div>
-                    <div class="text-moto-500 font-bold">KES ${item.price}</div>
-                </div>
-            `).join('');
-
-            // Low Stock Alerts
-            const lowItems = inventory.filter(i => i.stock <= i.critical);
-            document.getElementById('lowStockList').innerHTML = lowItems.map(i => `
-                <div class="flex justify-between p-3 bg-moto-accent/10 rounded-lg text-sm">
-                    <span>${i.name}</span> <span class="font-bold">Only ${i.stock} left</span>
-                </div>
-            `).join('');
+        function showView(view) {
+            document.querySelectorAll('.view-pane').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('bg-white/5', 'text-orange-400', 'font-bold');
+                l.classList.add('text-gray-400');
+            });
             
-            document.getElementById('invBadge').innerText = lowItems.length;
-            document.getElementById('invBadge').classList.toggle('hidden', lowItems.length === 0);
-            document.getElementById('dashStockCount').innerText = inventory.length;
-            document.getElementById('dashAlertCount').innerText = lowItems.length;
+            document.getElementById('view-' + view).classList.remove('hidden');
+            event.currentTarget.classList.add('bg-white/5', 'text-orange-400', 'font-bold');
+            document.getElementById('viewTitle').innerText = event.currentTarget.innerText;
         }
 
-        function addToCart(name, price) {
-            const item = cart.find(c => c.name === name);
-            if(item) item.qty++;
-            else cart.push({ name, price, qty: 1 });
-            renderCart();
-        }
-
-        function renderCart() {
-            const list = document.getElementById('cartList');
-            let total = 0;
-            list.innerHTML = cart.map((c, i) => {
-                total += (c.price * c.qty);
-                return `<div class="flex justify-between text-sm"><span>${c.qty}x ${c.name}</span><span>${(c.price * c.qty).toLocaleString()}</span></div>`;
-            }).join('');
-            document.getElementById('posTotal').innerText = `KES ${total.toLocaleString()}`;
-        }
-
-        function addNewPart(e) {
+        function savePart(e) {
             e.preventDefault();
             inventory.push({
                 id: Date.now(),
                 name: document.getElementById('pName').value,
-                price: parseInt(document.getElementById('pPrice').value),
-                stock: parseInt(document.getElementById('pStock').value),
-                critical: 5
+                qty: parseInt(document.getElementById('pQty').value),
+                price: parseInt(document.getElementById('pPrice').value)
             });
-            document.getElementById('addPartModal').classList.add('hidden');
+            toggleModal('partModal');
             e.target.reset();
-            updateUI();
+            renderAll();
         }
 
-        function processSale() {
-            if(cart.length === 0) return alert("Cart is empty!");
-            
-            let total = 0;
-            const receiptItems = document.getElementById('receipt-items');
-            receiptItems.innerHTML = cart.map(c => {
-                total += (c.price * c.qty);
-                // Reduce stock
-                const invItem = inventory.find(i => i.name === c.name);
-                if(invItem) invItem.stock -= c.qty;
-                return `<div style="display:flex; justify-content:space-between"><span>${c.qty}x ${c.name}</span><span>${(c.price * c.qty).toLocaleString()}</span></div>`;
-            }).join('');
+        function filterInventory() {
+            const query = document.getElementById('globalSearch').value.toLowerCase();
+            renderInventory(query);
+            renderPOS(query);
+        }
 
-            document.getElementById('receipt-total').innerText = `KES ${total.toLocaleString()}`;
+        function renderInventory(query = "") {
+            const list = document.getElementById('inventoryList');
+            const filtered = inventory.filter(i => i.name.toLowerCase().includes(query));
+            list.innerHTML = filtered.map(i => {
+                const status = i.qty > 5 ? 'Stable' : (i.qty > 0 ? 'Low' : 'Out of Stock');
+                const color = i.qty > 5 ? 'text-green-400' : (i.qty > 0 ? 'text-orange-400' : 'text-red-500');
+                return `
+                    <tr class="border-b border-white/5 hover:bg-white/5 transition">
+                        <td class="p-5 font-bold">${i.name}</td>
+                        <td class="text-gray-400">${i.qty} Units</td>
+                        <td>KES ${i.price.toLocaleString()}</td>
+                        <td class="${color} text-xs font-bold uppercase">${status}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPOS(query = "") {
+            const grid = document.getElementById('posGrid');
+            const filtered = inventory.filter(i => i.name.toLowerCase().includes(query) && i.qty > 0);
+            grid.innerHTML = filtered.map(i => `
+                <div onclick="addToCart(${i.id})" class="glass p-4 rounded-2xl cursor-pointer hover:border-orange-500 transition border border-transparent">
+                    <p class="text-xs text-gray-400">#${i.id.toString().slice(-4)}</p>
+                    <h4 class="font-bold my-1 truncate">${i.name}</h4>
+                    <p class="text-orange-500 font-bold">KES ${i.price}</p>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id) {
+            const part = inventory.find(i => i.id === id);
+            const inCart = cart.find(c => c.id === id);
+            if (inCart) {
+                if (inCart.qty < part.qty) inCart.qty++;
+                else alert("Maximum stock reached");
+            } else {
+                cart.push({...part, qty: 1});
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const area = document.getElementById('cartItems');
+            let total = 0;
+            area.innerHTML = cart.map(c => {
+                total += (c.price * c.qty);
+                return `
+                    <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl">
+                        <div>
+                            <p class="text-sm font-bold">${c.name}</p>
+                            <p class="text-xs text-gray-500">${c.qty} x ${c.price}</p>
+                        </div>
+                        <p class="font-bold">KES ${c.price * c.qty}</p>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('cartTotal').innerText = `KES ${total.toLocaleString()}`;
+        }
+
+        function checkout() {
+            if (cart.length === 0) return;
+            
+            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            
+            // Print logic
+            document.getElementById('receiptContent').innerHTML = cart.map(c => `
+                <div style="display:flex; justify-content:space-between">
+                    <span>${c.qty}x ${c.name}</span>
+                    <span>${(c.price * c.qty).toLocaleString()}</span>
+                </div>
+            `).join('');
+            document.getElementById('receiptTotalText').innerText = `KES ${total.toLocaleString()}`;
+            
+            // Deduct Stock & Save Sale
+            cart.forEach(c => {
+                const item = inventory.find(i => i.id === c.id);
+                item.qty -= c.qty;
+            });
+            
+            sales.push({ date: new Date().toLocaleTimeString(), total: total, items: cart.length });
+            
             window.print();
             cart = [];
+            renderAll();
+        }
+
+        function renderAll() {
+            renderInventory();
+            renderPOS();
             renderCart();
-            updateUI();
+            
+            // Update Stats
+            document.getElementById('statParts').innerText = inventory.length;
+            document.getElementById('statLow').innerText = inventory.filter(i => i.qty <= 0).length;
+            const rev = sales.reduce((s, v) => s + v.total, 0);
+            document.getElementById('statRevenue').innerText = `KES ${rev.toLocaleString()}`;
+            
+            // Low Stock Feed
+            const low = inventory.filter(i => i.qty <= 5);
+            document.getElementById('lowStockFeed').innerHTML = low.map(i => `
+                <div class="flex items-center gap-4 p-4 bg-red-500/5 rounded-2xl border border-red-500/10">
+                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                    <span class="text-sm flex-1">${i.name}</span>
+                    <span class="text-xs font-bold text-red-500">${i.qty} LEFT</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center py-10">Stock levels healthy.</p>';
+
+            // Ledger
+            document.getElementById('ledgerTable').innerHTML = `
+                <table class="w-full text-left">
+                    <thead class="bg-white/5 text-gray-400 text-xs"><tr><th class="p-5">Time</th><th>Items</th><th>Total</th></tr></thead>
+                    <tbody>${sales.map(s => `<tr class="border-b border-white/5"><td class="p-5">${s.date}</td><td>${s.items} Parts</td><td class="font-bold text-green-400">KES ${s.total.toLocaleString()}</td></tr>`).join('')}</tbody>
+                </table>
+            `;
         }
     </script>
 </body>
